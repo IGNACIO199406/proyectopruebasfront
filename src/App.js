@@ -1,47 +1,50 @@
-import './App.css';
-import AppBar from '@mui/material/AppBar';
-import { Box, Container, Grid, Typography } from "@mui/material";
-import Toolbar from '@mui/material/Toolbar';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import MenuIcon from '@mui/icons-material/Menu';
-function App() {
-  return (
-<Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static">
-        <Toolbar>
-          <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            sx={{ mr: 2 }}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          e-Commerce Gapsi
-          </Typography>
-  
-        </Toolbar>
-      </AppBar>
+import React, { Suspense, useEffect } from 'react'
+import { HashRouter, Route, Routes } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 
-      <Container maxWidth="lg">
-        <Grid container direction="column" alignItems="center">
-          <Grid item xs={12}>
-            <Typography color="black" variant="h5">
-              React Starter App
-            </Typography>
-          </Grid>
-          <Grid item xs={12}>
-            <Typography color="textSecondary" variant="subtitle1">
-              {`${new Date().getFullYear()} | React | Material UI | React Router`}
-            </Typography>
-          </Grid>
-        </Grid>
-      </Container>
-    </Box>
-  );
+import { CSpinner, useColorModes } from '@coreui/react'
+import './scss/style.scss'
+
+// Containers
+const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
+
+// Pages
+const Login = React.lazy(() => import('./views/pages/login/Login'))
+
+const App = () => {
+  const { isColorModeSet, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
+  const storedTheme = useSelector((state) => state.theme)
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.href.split('?')[1])
+    const theme = urlParams.get('theme') && urlParams.get('theme').match(/^[A-Za-z0-9\s]+/)[0]
+    if (theme) {
+      setColorMode(theme)
+    }
+
+    if (isColorModeSet()) {
+      return
+    }
+
+    setColorMode(storedTheme)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  return (
+    <HashRouter>
+      <Suspense
+        fallback={
+          <div className="pt-3 text-center">
+            <CSpinner color="primary" variant="grow" />
+          </div>
+        }
+      >
+        <Routes>
+          <Route exact path="/" name="Login Page" element={<Login />} />
+          <Route path="*" name="Home" element={<DefaultLayout />} />
+        </Routes>
+      </Suspense>
+    </HashRouter>
+  )
 }
 
-export default App;
+export default App
